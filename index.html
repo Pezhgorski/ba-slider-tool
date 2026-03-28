@@ -180,11 +180,13 @@
       sweepGen++;
     }
 
+    let forward = true;
+
     function runSweep() {
       stopSweep();
       const gen = ++sweepGen;
       sweepRunning = true;
-      setPosition(0);
+      setPosition(forward ? 0 : 100);
 
       setTimeout(() => {
         if (gen !== sweepGen) return;
@@ -194,13 +196,15 @@
           if (gen !== sweepGen) return;
           const elapsed = now - start;
           const progress = Math.min(elapsed / SWEEP_DURATION_MS, 1);
-          setPosition(ease(progress) * 100);
+          const eased = ease(progress);
+          setPosition(forward ? eased * 100 : (1 - eased) * 100);
 
           if (progress < 1) {
             animationId = requestAnimationFrame(tick);
           } else {
             animationId = null;
             if (LOOP) {
+              forward = !forward;
               setTimeout(() => {
                 if (gen === sweepGen) runSweep();
               }, END_HOLD_MS);
