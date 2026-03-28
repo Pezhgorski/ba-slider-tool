@@ -138,10 +138,15 @@
 
   <script>
     // ─── Configuration ─────────────────────
-    const SWEEP_DURATION_MS = 10000;
-    const START_DELAY_MS    = 1000;
-    const END_HOLD_MS       = 2000;
-    const LOOP              = true;
+    // Defaults — overridable via URL params:
+    // ?duration=10000&delay=1000&hold=2000&loop=true&start=0&end=100
+    const P = new URLSearchParams(location.search);
+    const SWEEP_DURATION_MS = Number(P.get('duration')) || 10000;
+    const START_DELAY_MS    = Number(P.get('delay'))    || 1000;
+    const END_HOLD_MS       = Number(P.get('hold'))     || 2000;
+    const LOOP              = P.has('loop') ? P.get('loop') !== 'false' : true;
+    const START_PCT         = Number(P.get('start'))    || 0;
+    const END_PCT           = P.has('end') ? Number(P.get('end')) : 100;
     // ───────────────────────────────────────
 
     const slider    = document.getElementById('slider');
@@ -186,7 +191,9 @@
       stopSweep();
       const gen = ++sweepGen;
       sweepRunning = true;
-      setPosition(forward ? 0 : 100);
+      const from = forward ? START_PCT : END_PCT;
+      const to   = forward ? END_PCT : START_PCT;
+      setPosition(from);
 
       setTimeout(() => {
         if (gen !== sweepGen) return;
@@ -197,7 +204,7 @@
           const elapsed = now - start;
           const progress = Math.min(elapsed / SWEEP_DURATION_MS, 1);
           const eased = ease(progress);
-          setPosition(forward ? eased * 100 : (1 - eased) * 100);
+          setPosition(from + eased * (to - from));
 
           if (progress < 1) {
             animationId = requestAnimationFrame(tick);

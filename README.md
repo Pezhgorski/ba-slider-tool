@@ -13,11 +13,35 @@ Full-screen before/after slider with auto-sweep animation. Designed to be screen
 
 ## Configuration
 
-Edit the constants at the top of the `<script>` in `index.html`:
+All settings can be overridden via URL query parameters — no need to edit the file.
 
-| Constant | Default | Description |
-|----------|---------|-------------|
-| `SWEEP_DURATION_MS` | `10000` | How long the sweep takes (ms) |
-| `START_DELAY_MS` | `1000` | Pause before sweep starts (ms) |
-| `END_HOLD_MS` | `2000` | Pause after sweep ends before looping (ms) |
-| `LOOP` | `true` | Auto-restart after each sweep |
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `duration` | `10000` | Sweep duration in ms |
+| `delay` | `1000` | Pause before sweep starts (ms) |
+| `hold` | `2000` | Pause after sweep ends before reversing (ms) |
+| `loop` | `true` | Ping-pong loop (`true` / `false`) |
+| `start` | `0` | Starting slider position (0–100) |
+| `end` | `100` | Ending slider position (0–100) |
+
+### Examples
+
+Full sweep, default timing:
+```
+index.html
+```
+
+Partial sweep (20% to 80%), faster, no loop:
+```
+index.html?start=20&end=80&duration=5000&loop=false
+```
+
+Slow cinematic sweep with long holds:
+```
+index.html?duration=15000&delay=2000&hold=3000
+```
+
+Quick 3-second sweep, no pauses:
+```
+index.html?duration=3000&delay=0&hold=0
+```
