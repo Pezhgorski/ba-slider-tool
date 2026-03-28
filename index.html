@@ -7,7 +7,7 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
+    html, body {
       background: #000;
       overflow: hidden;
       width: 100vw;
@@ -171,24 +171,27 @@
 
     let animationId = null;
     let sweepRunning = false;
+    let sweepGen = 0;
 
     function stopSweep() {
       if (animationId) cancelAnimationFrame(animationId);
       animationId = null;
       sweepRunning = false;
+      sweepGen++;
     }
 
     function runSweep() {
       stopSweep();
+      const gen = ++sweepGen;
       sweepRunning = true;
       setPosition(0);
 
       setTimeout(() => {
-        if (!sweepRunning) return;
+        if (gen !== sweepGen) return;
         const start = performance.now();
 
         function tick(now) {
-          if (!sweepRunning) return;
+          if (gen !== sweepGen) return;
           const elapsed = now - start;
           const progress = Math.min(elapsed / SWEEP_DURATION_MS, 1);
           setPosition(ease(progress) * 100);
@@ -199,7 +202,7 @@
             animationId = null;
             if (LOOP) {
               setTimeout(() => {
-                if (sweepRunning) runSweep();
+                if (gen === sweepGen) runSweep();
               }, END_HOLD_MS);
             }
           }
