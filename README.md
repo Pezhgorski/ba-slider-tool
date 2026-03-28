@@ -1,15 +1,21 @@
 # Before/After Slider Recording Tool
 
-Full-screen before/after slider with auto-sweep animation. Designed to be screen-recorded for YouTube video outros.
+Full-screen before/after slider with auto-sweep animation. Zero dependencies — just HTML, CSS, and vanilla JS.
 
-## Usage
+Drop in two images, open in a browser, screen-record. Built for YouTube video outros but works for any before/after comparison.
 
-1. Replace `images/before.jpg` and `images/after.jpg` with your photos
-2. Open `index.html` in a browser
-3. Press F11 for full-screen
-4. Press **Space** to start/restart the animation
-5. Screen-record the sweep
-6. Click and drag to preview specific positions
+## Quick Start
+
+1. Clone this repo
+2. Replace the two images in the `images/` folder:
+   - `images/before.jpg` — your "before" photo
+   - `images/after.jpg` — your "after" photo
+3. Open `index.html` in a browser
+4. Press **F11** for full-screen
+5. Press **Space** to start the animation
+6. Screen-record the sweep
+
+The slider auto-animates a smooth left-to-right sweep, then reverses back. Click and drag to preview any position manually.
 
 ## Configuration
 
