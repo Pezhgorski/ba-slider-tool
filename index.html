@@ -141,12 +141,13 @@
     // Defaults — overridable via URL params:
     // ?duration=10000&delay=1000&hold=2000&loop=true&start=0&end=100
     const P = new URLSearchParams(location.search);
-    const SWEEP_DURATION_MS = Number(P.get('duration')) || 10000;
-    const START_DELAY_MS    = Number(P.get('delay'))    || 1000;
-    const END_HOLD_MS       = Number(P.get('hold'))     || 2000;
+    const param = (key, fallback) => P.has(key) ? Number(P.get(key)) : fallback;
+    const SWEEP_DURATION_MS = param('duration', 10000);
+    const START_DELAY_MS    = param('delay', 1000);
+    const END_HOLD_MS       = param('hold', 2000);
     const LOOP              = P.has('loop') ? P.get('loop') !== 'false' : true;
-    const START_PCT         = Number(P.get('start'))    || 0;
-    const END_PCT           = P.has('end') ? Number(P.get('end')) : 100;
+    const START_PCT         = param('start', 0);
+    const END_PCT           = param('end', 100);
     // ───────────────────────────────────────
 
     const slider    = document.getElementById('slider');
