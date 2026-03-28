@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Before / After Slider</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      cursor: ew-resize;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .slider {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .slider img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .after-wrap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow: hidden;
+      width: 0%;
+    }
+
+    .after-wrap img {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0%;
+      width: 3px;
+      background: #059669;
+      transform: translateX(-50%);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .handle-circle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      background: #059669;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+    }
+
+    .handle-circle svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: white;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .label {
+      position: absolute;
+      top: 16px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .label-before {
+      right: 16px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+    }
+
+    .label-after {
+      left: 16px;
+      background: rgba(5, 150, 105, 0.85);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="slider" id="slider">
+    <img src="images/before.jpg" alt="Before">
+
+    <div class="after-wrap" id="afterWrap">
+      <img src="images/after.jpg" alt="After">
+    </div>
+
+    <div class="handle" id="handle">
+      <div class="handle-circle">
+        <svg viewBox="0 0 24 24">
+          <path d="M8 5l-5 7 5 7M16 5l5 7-5 7"/>
+        </svg>
+      </div>
+    </div>
+
+    <span class="label label-before">Before</span>
+    <span class="label label-after">After</span>
+  </div>
+
+  <script>
+    // ─── Configuration ─────────────────────
+    const SWEEP_DURATION_MS = 10000;
+    const START_DELAY_MS    = 1000;
+    const END_HOLD_MS       = 2000;
+    const LOOP              = true;
+    // ───────────────────────────────────────
+
+    const slider    = document.getElementById('slider');
+    const afterWrap = document.getElementById('afterWrap');
+    const handle    = document.getElementById('handle');
+    const afterImg  = afterWrap.querySelector('img');
+
+    // Keep after-image sized to full viewport (not clipped width)
+    function syncAfterWidth() {
+      afterImg.style.width = slider.offsetWidth + 'px';
+    }
+    syncAfterWidth();
+    new ResizeObserver(syncAfterWidth).observe(slider);
+
+    function setPosition(pct) {
+      const clamped = Math.max(0, Math.min(100, pct));
+      afterWrap.style.width = clamped + '%';
+      handle.style.left = clamped + '%';
+    }
+
+    // Cubic ease-in-out
+    function ease(t) {
+      return t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    let animationId = null;
+    let sweepRunning = false;
+
+    function stopSweep() {
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = null;
+      sweepRunning = false;
+    }
+
+    function runSweep() {
+      stopSweep();
+      sweepRunning = true;
+      setPosition(0);
+
+      setTimeout(() => {
+        if (!sweepRunning) return;
+        const start = performance.now();
+
+        function tick(now) {
+          if (!sweepRunning) return;
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / SWEEP_DURATION_MS, 1);
+          setPosition(ease(progress) * 100);
+
+          if (progress < 1) {
+            animationId = requestAnimationFrame(tick);
+          } else {
+            animationId = null;
+            if (LOOP) {
+              setTimeout(() => {
+                if (sweepRunning) runSweep();
+              }, END_HOLD_MS);
+            }
+          }
+        }
+
+        animationId = requestAnimationFrame(tick);
+      }, START_DELAY_MS);
+    }
+
+    // ─── Drag support (for previewing) ────
+    let isDragging = false;
+
+    function getPercent(e) {
+      const rect = slider.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      return (x / rect.width) * 100;
+    }
+
+    slider.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      stopSweep();
+      setPosition(getPercent(e));
+    });
+
+    slider.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      stopSweep();
+      setPosition(getPercent(e));
+    }, { passive: true });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isDragging) setPosition(getPercent(e));
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (isDragging) setPosition(getPercent(e));
+    }, { passive: true });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('touchend', () => { isDragging = false; });
+
+    // ─── Keyboard ─────────────────────────
+    // Space = restart animation
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        runSweep();
+      }
+    });
+
+    // Start on load
+    runSweep();
+  </script>
+</body>
+</html>
