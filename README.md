@@ -51,3 +51,7 @@ Quick 3-second sweep, no pauses:
 ```
 index.html?duration=3000&delay=0&hold=0
 ```
+
+## Seen in the wild
+
+This slider powers every before/after demo on [listinggems.com](https://listinggems.com) — a desktop product photo enhancer for marketplace sellers, built by the same author.
